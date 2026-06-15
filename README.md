@@ -13,6 +13,7 @@ A lightweight, robust, and clean REST API scaffolded with Node.js, Express, and 
 5. [Rules](#rules)
 6. [Existent Data](#existent-data)
 7. [How to Use the REST API](#how-to-use-the-rest-api)
+8. [API Documentation (Swagger UI)](#8-api-documentation-swagger-ui)
 
 ---
 
@@ -29,6 +30,7 @@ The codebase follows professional developer best practices:
 ```
 ecommerce-eurostar/
 ├── package.json
+├── swagger.yaml                  # OpenAPI 3.0 specification file
 ├── README.md
 └── src/
     ├── app.js                    # Entry point of the Express application
@@ -303,3 +305,17 @@ Here are explicit cURL examples and payloads to test all available endpoints.
     "timestamp": "2026-06-15T10:20:00.000Z"
   }
   ```
+
+---
+
+## 8. API Documentation (Swagger UI)
+
+A full interactive documentation is available using the integrated Swagger page. 
+
+- **Docs Page URL**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **Specification Format**: OpenAPI 3.0.3 (saved as `swagger.yaml` in the project root)
+
+To view, test, and interact with the endpoints:
+1. Start the server (e.g. `npm run dev`).
+2. Visit [http://localhost:3000/api-docs](http://localhost:3000/api-docs) in your web browser.
+3. Use the integrated UI to construct register/login request models and test checking out with cash or credit card.

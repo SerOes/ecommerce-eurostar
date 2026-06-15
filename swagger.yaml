@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: E-Commerce Eurostar REST API
+  description: |-
+    A lightweight, robust, and clean REST API using Node.js, Express, and JWT for secure in-memory e-commerce transactions.
+    
+    ### Guidelines & Rules:
+    1. **Authentication**: Clear routes for `/register` and `/login`. To use `/checkout`, obtain a JWT token from `/login` and provide it in the `Authorization` header under the `Bearer <token>` scheme.
+    2. **Checkout Payment Methods**: Only `cash` and `credit card` are accepted.
+    3. **Discounts**:
+       - `cash` guarantees a immediate **10% discount** off the original total.
+       - `credit card` does not award any discount.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      description: Creates a user account with hashed passwords and returns safe, non-sensitive credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: customer@example.com
+                password:
+                  type: string
+                  format: password
+                  example: mypassword123
+                name:
+                  type: string
+                  example: New Customer
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully.
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: user-4
+                      email:
+                        type: string
+                        example: customer@example.com
+                      name:
+                        type: string
+                        example: New Customer
+        '400':
+          description: Bad Request (Invalid parameters or email already registered)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: User already exists with this email.
+
+  /login:
+    post:
+      summary: Login user and retrieve JWT Token
+      description: Validates email and password, returning a secure JWT token for checking out securely.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful.
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ...
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: user-1
+                      email:
+                        type: string
+                        example: john@example.com
+                      name:
+                        type: string
+                        example: John Doe
+        '401':
+          description: Unauthorized (Invalid credentials)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email or password.
+
+  /checkout:
+    post:
+      summary: Check out shopping cart items
+      description: Processes products inside the shopping cart. Secured by JWT token validation. Handles payment verification and discounts (10% cash discount).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - paymentMethod
+                - items
+              properties:
+                paymentMethod:
+                  type: string
+                  enum: [cash, credit card]
+                  example: cash
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - productId
+                      - quantity
+                    properties:
+                      productId:
+                        type: string
+                        example: prod-1
+                      quantity:
+                        type: integer
+                        minimum: 1
+                        example: 2
+      responses:
+        '200':
+          description: Checkout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: user-1
+                      name:
+                        type: string
+                        example: John Doe
+                      email:
+                        type: string
+                        example: john@example.com
+                  paymentMethod:
+                    type: string
+                    example: cash
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          type: string
+                          example: prod-1
+                        name:
+                          type: string
+                          example: Laptop
+                        price:
+                          type: number
+                          example: 1000
+                        quantity:
+                          type: integer
+                          example: 1
+                        total:
+                          type: number
+                          example: 1000
+                  originalTotal:
+                    type: number
+                    example: 1200
+                  discount:
+                    type: number
+                    example: 120
+                  finalTotal:
+                    type: number
+                    example: 1080
+                  message:
+                    type: string
+                    example: Checkout successful with a 10% cash discount applied!
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2026-06-15T10:15:30.000Z
+        '400':
+          description: Bad request (Invalid payment method or product ID error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid payment method. Only "cash" or "credit card" are accepted.
+        '401':
+          description: Unauthorized (Invalid, expired, or missing Bearer Token)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Access denied. Authenticated users only. Please provide a Bearer token in the Authorization header.
+
+  /healthcheck:
+    get:
+      summary: Health check diagnostic
+      description: Verifies service is up and running correctly.
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+                  uptime:
+                    type: number
+                    example: 12.34
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2026-06-15T10:00:00.000Z'
+                  message:
+                    type: string
+                    example: E-commerce API is healthy.
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
