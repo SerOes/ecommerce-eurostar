@@ -1,0 +1,11 @@
+{
+  "require": "./test/hooks.js",
+  "reporter": "mochawesome",
+  "reporter-option": [
+    "reportDir=mochawesome-report",
+    "reportFilename=pathCoverage",
+    "quiet=true"
+  ],
+  "spec": "test/pathCoverage/**/*.test.js",
+  "timeout": 20000
+}
